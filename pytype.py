@@ -35,20 +35,21 @@ from urllib import FancyURLopener
 from random import choice
 from colorama import Fore, Back, Style
 from time import sleep
+
 if platform.system() == 'Windows':
     import msvcrt
 elif platform.system() == 'Linux':
     import termios, fcntl
+
 auto_correct = False
+
 class KThread(threading.Thread):
-    """A subclass of threading.Thread, with a kill() method."""
     def __init__(self, *args, **keywords):
         threading.Thread.__init__(self, *args, **keywords)
         self.killed = False
     def start(self):
-        """Start the thread."""
         self.__run_backup = self.run
-        self.run = self.__run      # Force the Thread to install our trace.
+        self.run = self.__run
         threading.Thread.start(self)
     def __run(self):
         """Hacked run function, which installs the trace."""
@@ -67,26 +68,6 @@ class KThread(threading.Thread):
         return self.localtrace
     def kill(self):
         self.killed = True
-
-def get_single_press():
-    fd = sys.stdin.fileno()
-    oldterm = termios.tcgetattr(fd)
-    newattr = termios.tcgetattr(fd)
-    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-    termios.tcsetattr(fd, termios.TCSANOW, newattr)
-    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
-    try:
-        while 1:
-            try:
-                c = sys.stdin.read(1)
-                return c
-                sys.exit(1)
-            except IOError: 
-                pass
-    finally: 
-        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
-        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
 class GetColor(object):
     colorama.init()
@@ -111,6 +92,7 @@ class GetColor(object):
                 return (Fore.RED+string+Style.RESET_ALL)
             else:
                 return "Are you kidding?"
+                
 class Fixer(object):
     def word_wrap(self,string, width=80, ind1=0, ind2=0, prefix=''):
         """ word wrapping function.
@@ -156,28 +138,26 @@ class Fixer(object):
         for (k,v) in special.items():
             text = text.replace(k, v)
         return text
-
-class MyOpener(FancyURLopener):
-    version = 'Mozilla/5.0 (X11; Linux i686; rv:2.0b13pre) Gecko/20110322 Firefox/4.0b13pre'
-
-class import_words:
-    def __init__(self):
-        self.myopener = MyOpener()
-        self.url      = 'http://imdb.com'
-    def get_quotes(self):
-        open_url    = self.myopener.open('http://www.imdb.com/chart/top')
-        url         = open_url.read()
-        rurl        = re.findall(r'/title/tt.*?/',url)
-        tt_movie    = choice(rurl)
-        open_movie  = self.myopener.open(self.url+tt_movie+'quotes')
-        movie       = open_movie.read()
-        self.rtitle = re.findall(r'<title>(.*?)</title>',movie)
-        rmovie      = re.findall(r'<a href="/name/.*?:((.|\n)*?)<br />',movie)
-        gw1         = choice(rmovie)
-        fix         = Fixer().replacer(gw1[0])
-        return Fixer().word_wrap(fix.replace('\n',''), 70)
-    def info(self):
-        return (self.rtitle[0]).split('(')[0]
+        
+def get_single_press():
+    fd = sys.stdin.fileno()
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+    try:
+        while 1:
+            try:
+                c = sys.stdin.read(1)
+                return c
+                sys.exit(1)
+            except IOError: 
+                pass
+    finally: 
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
 def timers():
     global maxa,tot
@@ -194,6 +174,7 @@ def timers():
         sys.stdout.write("\r  \r\n") # clean up
     except:
         tot.append(maxa)
+
 def timer():
   global schemer
   schemer = 1
@@ -207,9 +188,10 @@ def timer():
         schemer = schemer + 1
     except:
       break
-color = GetColor()
+
 def typing_word(word):
   global correct, wrong, timer, A, complete
+  color = GetColor()
   complete = False
   A = KThread(target=timer)
   keyboard = list(word)
@@ -269,15 +251,14 @@ def typing_word(word):
 
 def typing_sentence(word):
     global sentence
+    color = GetColor()
     sentence = False
     total_correct = []
     total_wrong = []
     sentence = word.split('\n')
     sentence.append('last item')
     x = 0
-    print '##################'
-    print '# Begin typing > #'
-    print '##################\n'
+    print '# Begin typing >\n'
     print words
     for i in sentence:
         try:
@@ -297,29 +278,23 @@ def typing_sentence(word):
     accuracy = (sum(total_correct)*100)/len(words)
     print '\n\nCorrect\t :',sum(total_correct)/5
     print 'Mistaken :',sum(total_wrong)
-    #
     words_ = sum(total_correct)/5
     wps_ = words_ * schemer
     wpm_ = wps_ / 60
     gross = float(schemer)/60
-    #print gross
-    #print int(words_/gross)
     print 'WPM\t : %s WPM'%(int((sum(total_correct)/5)/(float(schemer)/60)))
     print 'Time\t : [%s] Minutes [%s] Seconds'%(schemer/60,schemer-((schemer/60)*60))
     if accuracy >= 50:
         print 'Accuracy : %s %%'%(color.to_color(str(accuracy),'green'))
     else:
         print 'Accuracy : %s %%'%(color.to_color(str(accuracy),'red'))
-        #print 'From the movie : '+get_words.info()
+        
 def main():
-    global words, get_words
-    get_words = import_words()
+    global words
     words = '''Think you're smart, huh? The guy that hired youze,
 he'll just do the same to you. Oh, criminals in this town used
 to believe in things. Honor. Respect. Look at you! What do you
 believe in, huh? WHAT DO YOU BELIEVE IN?'''
-    #words = get_words.get_quotes()
-    #words = 'fuck\nyou'
     typing_sentence(words)
 if __name__ == '__main__':
     main()
