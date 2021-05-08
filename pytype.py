@@ -31,7 +31,6 @@ import time
 import platform
 import threading
 from threading import Thread
-from urllib import FancyURLopener
 from random import choice
 from colorama import Fore, Back, Style
 from time import sleep
@@ -72,23 +71,23 @@ class KThread(threading.Thread):
 class GetColor(object):
     colorama.init()
     def to_color(self, string, color):
-        if platform.system() == 'Linux':
-            if color == 'blue':
-                return '\033[1;34m'+string+'\033[1;m'
-            elif color == 'red':
-                return '\033[1;31m'+string+'\033[1;m'
-            elif color == 'green':
-                return '\033[1;32m'+string+'\033[1;m'
+        if platform.system() == "Linux":
+            if color == "blue":
+                return "\033[1;34m"+string+"\033[1;m"
+            elif color == "red":
+                return "\033[1;31m"+string+"\033[1;m"
+            elif color == "green":
+                return "\033[1;32m"+string+"\033[1;m"
             elif color == 'white':
-                return '\033[1;37m'+string+'\033[1;m'
+                return "\033[1;37m"+string+"\033[1;m"
             else:
                 return "Are you kidding?"
-        elif platform.system() == 'Windows':
-      	    if color == 'blue':
+        elif platform.system() == "Windows":
+            if color == "blue":
                 return (Fore.BLUE+string+Style.RESET_ALL)
-            elif color == 'green':
+            elif color == "green":
                 return (Fore.GREEN+string+Style.RESET_ALL)
-            elif color == 'red':
+            elif color == "red":
                 return (Fore.RED+string+Style.RESET_ALL)
             else:
                 return "Are you kidding?"
@@ -171,7 +170,8 @@ def timers():
             sys.stdout.flush()
             time.sleep(1)
             x = x + 1
-        sys.stdout.write("\r  \r\n") # clean up
+        # clean up screen
+        sys.stdout.write("\r  \r\n")
     except:
         tot.append(maxa)
 
@@ -184,7 +184,6 @@ def timer():
       	break
       else:
         time.sleep(1)
-        #sys.stdout.write(str(schemer))
         schemer = schemer + 1
     except:
       break
@@ -256,10 +255,10 @@ def typing_sentence(word):
     total_correct = []
     total_wrong = []
     sentence = word.split('\n')
-    sentence.append('last item')
+    sentence.append("last item")
     x = 0
-    print '# Begin typing >\n'
-    print words
+    print("# Begin typing >\n")
+    print(words)
     for i in sentence:
         try:
             if i == sentence[-1]:
@@ -276,18 +275,18 @@ def typing_sentence(word):
         except typing_wordError:
             pass
     accuracy = (sum(total_correct)*100)/len(words)
-    print '\n\nCorrect\t :',sum(total_correct)/5
-    print 'Mistaken :',sum(total_wrong)
+    print("\n\nCorrect\t :",sum(total_correct)/5)
+    print("Mistaken :",sum(total_wrong))
     words_ = sum(total_correct)/5
     wps_ = words_ * schemer
     wpm_ = wps_ / 60
     gross = float(schemer)/60
-    print 'WPM\t : %s WPM'%(int((sum(total_correct)/5)/(float(schemer)/60)))
-    print 'Time\t : [%s] Minutes [%s] Seconds'%(schemer/60,schemer-((schemer/60)*60))
+    print("WPM\t : %s WPM"%(int((sum(total_correct)/5)/(float(schemer)/60))))
+    print("Time\t : [%s] Minutes [%s] Seconds"%(schemer/60,schemer-((schemer/60)*60)))
     if accuracy >= 50:
-        print 'Accuracy : %s %%'%(color.to_color(str(accuracy),'green'))
+        print("Accuracy : %s %%"%(color.to_color(str(accuracy),"green")))
     else:
-        print 'Accuracy : %s %%'%(color.to_color(str(accuracy),'red'))
+        print("Accuracy : %s %%"%(color.to_color(str(accuracy),"red")))
         
 def main():
     global words
